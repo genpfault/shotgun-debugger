@@ -1,0 +1,495 @@
+<html>
+<head></head>
+<body>
+
+<center><h1>Shotgun Debugger Level Design</h1>
+for Version 1.0<br>
+May 6, 2005<br>
+<a href="http://www.contrib.andrew.cmu.edu/~msarnoff/">Matthew Sarnoff</a><br><br><br>
+
+<big><i>"Work smart, not hard."</i></big><br>
+<small>-Scott Durocher, Kingstown Camera & Digital Image</small></center><br>
+
+
+<ul>
+<li><a href="#s1">1. Converting levels to VL format</a>
+<li><a href="#s2">2. Layer structure</a>
+<li><a href="#s3">3. The <tt>&lt;vl&gt;</tt> element</a>
+<li><a href="$s4">4. Other notes</a>
+<li><a href="#s5">5. Floors (<tt>floor</tt> layer)</a>
+<li><a href="#s6">6. Wall and "ceiling" polygons (<tt>arch</tt> layer)</a>
+<li><a href="#s7">7. Doors (<tt>doors</tt> layer)</a>
+<li><a href="#s8">8. Surfaces (<tt>surfaces</tt> layer)</a>
+<li><a href="#s9">9. Objects (<tt>objects</tt> layer)</a>
+<li><a href="#s10">10. Object types</a>
+<li><a href="#s11">11. Lights (<tt>lights</tt> layer)</a>
+<li><a href="#s12">12. Masks (<tt>masks</tt> layer)</a>
+<li><a href="#s13">13. Triggers</a>
+<li><a href="#s14">14. Trigger respones</a>
+<li><a href="#s15">15. Paths (<tt>paths</tt> layer)</a>
+
+</ul>
+
+<a name="s1"><h2>1. Converting levels to VL format</h2>
+<p>After creating your level file in Inkscape, you need to convert it to a .vl
+file that can be read by Shotgun Debugger. The conversion script,
+<tt>svg2vl</tt>, is written in Perl. If you're on a *nix system, you've probably
+already got Perl. Refer to the <tt>svg2vl</tt> setup guide for more information.</p>
+
+<p>To convert your SVG, from the command line, type
+<blockquote><tt>$ svg2vl level_file</tt></blockquote>
+(where <tt>$</tt> is the command prompt) The <tt>.svg</tt> extension is optional.
+If everything converted well, it should finish with <tt>End of line</tt>, and
+you should have <tt>level_file.vl</tt> in the same directory as the SVG.</p>
+
+<p>You can then play your level by specifying it on the command line:
+<blockquote><tt>$ sdb level_file</tt></blockquote>
+(Again, the <tt>.vl</tt> extension is optional.) You can also add the line
+<tt>level level_file</tt> to the <tt>preferences.txt</tt>. Selecting "new game"
+at the menu will bring you to your level, and it will <i>not</i> overwrite your save.</p>
+
+<p>If you do not specify an argument, Shotgun Debugger plays the most recently loaded
+level; if you wish to return to normal play, remove the <tt>level level_file</tt> line
+in <tt>preferences.txt</tt>.
+
+<a name="s2"><h2>2. Layer structure</h2>
+A level file must define many things; not only the shape of the rooms,
+but the location of doors, enemies, and powerups, and the interactions
+between them as well. Inkscape's layering ability (similar to
+Photoshop's) allows one to work with different kinds of objects
+independently.</p>
+
+<p>The layers used in a VL file are typically all of the following (in
+order, bottom to top):
+<ul>
+<li><tt>floor</tt>, for defining surfaces that can be walked on
+<li><tt>arch</tt>, for defining <i>arch</i>itecture, usually in the
+forms of polygons ("wall-polygons") that represent walls, columns,
+etc.
+<li><tt>surfaces</tt>, for defining surfaces that have an additional
+effect on objects (healing, less friction, damage, etc.)
+<li><tt>objects</tt>, for defining entities (the player, enemies,
+powerups) in the level.
+<li><tt>paths</tt>, for defining the network of path nodes that enemies will use to navigate through the level.
+<li><tt>lights</tt>, for creating special lighting effects.
+<li><tt>masks</tt>, for defining "ceiling" polygons with obscure
+unvisited sections of the map when viewed from above.
+</ul>
+It is highly recommended that you place your layers in this order
+(floor on bottom, masks on top). When creating a new layer in
+Inkscape, it is important to realize that you cannot just set the name
+of the layer, you must change its <tt>id</tt> attribute in the XML
+editor.</p>
+<p>If you want, you can have multiple layers of a given type. Layer
+names are prefix-based; i.e. if you wanted to have 3 <tt>arch</tt> layers,
+you could create new layers called <tt>arch2</tt> and
+<tt>arch3</tt> (Any suffix will work). Multiple layers will be interpreted in the order they
+were placed in Inkscape, bottom to top.</p>
+
+<a name="s3"><h2>3. The <tt>&lt;vl&gt;</tt> element</h2>
+<p>If you're starting from scratch with a blank Inkscape document, not
+only do you have to create the layer hierarchy, but a special
+<tt>&lt;vl&gt;</tt> element as well. This is essential, as it tells
+<tt>svg2vl</tt> that this is a VL level file, not just an SVG
+file. Make sure it has the following attributes:</p>
+
+<dl>
+<dt><tt>name</tt></dt>
+<dd>The level's name.</dd>
+<dt><tt>author</tt></dt>
+<dd>Your name.</dd>
+<dt><tt>bg</tt></dt>
+<dd>A hex color (<tt>#rrggbb</tt>) representing the level's background
+color. Default is black (<tt>#000000</tt>).</dd>
+</dl>
+
+<p>And, if you want to experiment with lighting, you can use the following:</p>
+
+<dl>
+<dt><tt>lightcolor</tt></dt>
+<dd>A hex color (<tt>#rrggbb</tt>) specifying the color of the level's ambient
+light. Default is white (<tt>#FFFFFF</tt>).</dd>
+<dt><tt>lightintensity</tt></dt>
+<dd>A number from 0.0 to 1.0  specifying the intensity of the level's ambient
+light. Default is 0.2.</dd>
+<dt><tt>lightdirection</tt></dt>
+<dd>The "angle" that the ambient light points at. While not a very
+good metaphor, it affects the calculation of the shading. Should be
+fine at its default of 90 (degrees).</dd>
+<dt><tt>augmented</tt></dt>
+<dd>Whether this level is meant to be played in the "special" manner,
+as Level 8 is.</dd>
+</dl>
+
+<a name="s4"><h2>4. Other notes</h2>
+<p>Remember that curved segments of all kind are strictly
+forbidden. <tt>svg2vl</tt> will scream bloody murder at you if you
+accidentally leave one in. It will also tell you the <tt>id</tt> of
+the offending shape, so you can easily correct it. (Inkscape even
+allows you to locate objects by ID: just press Ctrl-F to bring up
+the Find dialog!)</p>
+<p>The element hierarchy also allows for inheritance. Instead of
+assigning a property to several objects, you can group them and use
+the XML editor to assign those properties to the group element. All
+properties (including color/opacity) will be properly inherited when
+converted. It works with layers too; you can assign a property to a
+layer element, and it will be reflected in all objects in that
+layer. I'd recommend against grouping layer elements...I don't know
+what Inkscape would do, and I'm sure <tt>svg2vl</tt> wouldn't like
+it.</p>
+<p>Also, make sure you know how to use the XML editor and understand
+what terms like "elements" and "attributes" refer to. Not too hard to comprehend...</p>
+<p>To <tt>svg2vl</tt>, everyting is case sensitive. All attributes and
+values should be lowercase, exactly as I type them. And when I talk
+about something's "default" value, this is the value that will be used
+if the attribute is omitted entirely.</p>
+
+
+<a name="s5"><h2>5. Floors (<tt>floor</tt> layer)</h2>
+<p>The <tt>floor</tt> layer is the bottom-most plane, and should be one
+of the first things laid out. Any polygon with a fill color will be
+interpreted as a floor; it is recommended that you set stroke width to
+zero for these polygons.</p>
+<p>Note that if any object moves onto an area not covered by a floor
+polygon, it will fall to its <b>DEATH</b>. Make sure that there are no
+open seams between floor segments; the grid is a Good Thing, and a
+little overlap between polygons is not a problem.</p>
+<h4>Additional XML attributes</h4>
+<dl>
+<dt><tt>friction</tt></dt>
+<dd>Specifies the friction coefficient of this floor polygon. The default is
+0.5. Maximum friction is 1.0 (this is generally a <i>bad</i> idea) and
+minimum is 0.0. Lower friction coefficients may result in drastic results when running at very low frame rates.</dd>
+<dt><tt>lit</tt></dt>
+<dd>Whether this floor is affected by lighting effects. Value is
+either <tt>y</tt> or <tt>n</tt>.</dd>
+<dt><tt>cd</tt></dt>
+<dd>Whether to check this floor during collision detection (<tt>y</tt>
+or <tt>n</tt>, default <tt>y</tt>). This should always be y (we don't
+want stuff randomly falling through the floor) unless you're putting
+the floor far away and are certain no object will step on it.</dd>
+<dt><tt>trigger, trigtype</tt></dt>
+<dd><i>See <a href="#s13">Triggers</a>.</i></dd>
+</dl>
+
+<a name="s6"><h2>6. Wall and "ceiling" polygons (<tt>arch</tt> layer)</h2>
+<p>These suckers pretty much define your level. Note the importance of
+polygon stroke and fill; the stroke of a polygon is transformed into a
+set of walls extruded vertically; if the polygon has a fill, it is
+drawn as a "cap" or "ceiling" on top of those extruded walls. Thus, if
+your polygon has no stroke, no walls will be created, and vice
+versa. The thickness of the stroke is irrelevant; make it something
+reasonable and unobtrusive for you.</p>
+<p>When creating walls, always create closed polygons. Don't make
+unconnected line segments and use them as very thin walls. This is
+because walls are one-way; they must have a "front" and a "back." If
+you were to create a wall with a single segment, you would collide
+with one side, but get sucked right through on the other. While this
+might be exploited to produce weird effects, for the most part, stick
+to closed polygons.</p>
+
+<h4>Additional XML attributes</h4>
+<dl>
+<dt><tt>h</tt></dt>
+<dd>The height of a wall-polygon. Default is 6.5 feet. Walls that sink
+into the floor can also be created with negative values; it is
+important to remember that since Shotgun Debugger is a 2D game, you
+will still collide with "phantom" walls if you have
+negatively-extruded wall-polygons.</dd>
+<dt><tt>lit</tt></dt>
+<dd><i>See <a href="#s5">Floors</a>.</i></dd>
+<dt><tt>force</tt></dt>
+<dd>The amount of force an object is repelled with if it comes in
+contact with the wall. This is still buggy and inconsistent. Default
+is 0 and it should stay that way for now.</dd>
+<dt><tt>health</tt></dt>
+<dd>The amount of health an object will gain if it touches the wall. A
+negative number will cause the player to lose health. Default is 0.</dd>
+<dt><tt>particles</tt></dt>
+<dd>The type of particles that are emitted when a bullet or object
+touches this wall. Takes an object identifier; see <a href="#s9">Objects</a> for more
+information.</dd>
+<dt><tt>particleqty</tt></dt>
+<dd>The number of particles emitted when a bullet or object
+touches this wall. Default is 0.</dd>
+<dt><tt>cd</tt></dt>
+<dd>Whether this wall-polygon should be checked for collisions. Value
+is a y/n pair; <tt>yy</tt>, <tt>nn</tt>, <tt>yn</tt>, etc. The first
+y/n specifies whether to check collisions with objects; the second
+specifies whether to check collisions with bullets. For example, a
+wall whose <tt>cd</tt> attribute is <tt>yn</tt> could be shot through
+but not walked through.</dd>
+<dt><tt>ricochet</tt></dt>
+<dd>Whether bullets ricochet off this wall (y/n). Default is n.</dd>
+<dt><tt>trigger, trigtype</tt></dt>
+<dd><i>See <a href="#s13">Triggers</a>.</i></dd>
+</dl>
+<p>If you want to create some small, very elaborate structures with
+walls, consider turning off collision detection (<tt>cd=nn</tt>) for
+the walls that make up this structure, then creating an invisible
+bounding box (walls with 100%-transparent stroke) around it. This
+will greatly reduce the number of collision checks the game performs.</p>
+
+<a name="s7"><h2>7. Doors (<tt>arch</tt> layer)</h2>
+<p>Doors are created with single line segments. To make a door, draw a
+line segment from one wall to another (or even in the middle of
+nowhere). The thickness of this line <i>does</i> matter; it represents
+the thickness of the door you see in the game (WYSIWYG). Doors take
+all the XML attributes of walls, and several others.</p>
+<p>I always like to make the doors extend into the walls slightly to
+reduce the appearance of seams, and set the height to just a couple
+inches below the height of the walls.</p>
+<p>Doors are opened when one enters their enclosing circle (centered
+at the midpoint of the line segment). To make double doors that open
+when the player walks up to them in the center, create two full-width
+doors that overlap and open in opposite directions.</p>
+
+<h4>Additional XML attributes</h4>
+<dl>
+<dt><tt>opens</tt></dt>
+<dd>The direction the door opens in. This value can be either
+<tt>slide1</tt>, where the door slides open toward the first point
+drawn, or <tt>slide2</tt>, to open in the opposite direction. More
+types of doors might come in the future.</dd>
+<dt><tt>speed</tt></dt>
+<dd>The speed at which a door opens; the inverse of the time it takes the
+door to open. A value of 5 would cause the door to open in 1/5
+second. Default is 2 (1/2 second).</dd>
+<dt><tt>delay</tt></dt>
+<dd>The amount of time this door stays open before closing, in
+seconds. Default is 1.</dd>
+<dt><tt>key</tt></dt>
+<dd>A value greater than 0 means the door is locked and must be opened
+with the numbered key. As of now there are plans for a five-key
+maximum; keep the value between 0 and 5.</dd>
+<dt><tt>unlockwhen, openwhen, jamwhen</tt></dt>
+<dd><i>See <a href="#s14">Trigger responses</a>.</i></dd>
+<dt><tt>trigger, trigtype</tt></dt>
+<dd><i>See <a href="#s13">Triggers</a>.</i></dd>
+<dt><tt>flags</tt></dt>
+<dd>A y/n pair. The first y/n indicates if this door is to play sounds
+when it is opened, closed, and unlocked. The second y/n indicates if
+a "This door is locked," etc. status message is to be displayed when
+the player walks near the door. Default is <tt>yy</tt>.
+</dl>
+
+<a name="s8"><h2>8. Surfaces (<tt>surfaces</tt> layer)</h2>
+<p>Surface are, well, special surfaces, like health jelly, lava,
+slime, mud, etc. that affect objects in some way. You should draw them
+with no stroke.</p>
+<p>An object cannot stand on a surface; if you draw a surface over an
+area wher there is no floor, the object will fall through it.</p>
+
+<h4>Additional XML attributes</h4>
+<dl>
+<dt><tt>friction, lit, cd</tt></dt>
+<dd><i>See <a href="#s5">Floors</a>.</i></dd>
+<dt><tt>health</tt></dt>
+<dd>The amount of health an object gains per second when standing on
+this surface. A negative number will hurt the object. Default is
+0.</dd>
+<dt><tt>particles, particleqty</tt></dt>
+<dd><i>See <a href="#s6">Walls</a>.</i></dd>
+<dt><tt>trigger, trigtype</tt></dt>
+<dd><i>See <a href="#s13">Triggers</a>.</i></dd>
+</dl>
+
+<a name="s9"><h2>9. Objects (<tt>objects</tt> layer)</h2>
+Objects are things in the level--the player, enemies, powerups,
+etc. Unfortunately, representing an object in Inkscape is not an easy
+thing, so we have to be a little abstract here. An object is
+represented as a rectangle (use the Rectangle tool) in the
+<tt>objects</tt> layer. It will be centered at the rectangle's
+center. Since the visual representation doesn't really do much for us,
+most object properties are defined as XML attributes.</p>
+<h4>Additional XML attributes</h4>
+<dl>
+<dt><tt>objecttype</tt></dt>
+<dd>Specifies this object's type. The value is a string found in the
+<tt>object_table.txt</tt> file, a file which contains a list of all
+recognized objects. Only a few have been implemented in 0.61; the rest
+will be added as they are modeled, etc. See <a href="#s10">Object types</a> for a list of
+the currently implemented objects.</dd>
+<dt><tt>heading</tt></dt>
+<dd>The direction the object is facing, in degrees. 0 degrees is
+pointing east, 90 is north, etc. Default is 0.</dd>
+<dt><tt>fixed</tt></dt>
+<dd>If this is set to <tt>y</tt>, the object will not be able to be pushed or moved by explosions. Default is <tt>n</tt>.</dd>
+<dt><tt>trigger, trigtype</tt></dt>
+<dd><i>See <a href="#s13">Triggers</a>.</i></dd>
+<dt><tt>wakewhen, killwhen</tt></dt>
+<dd><i>See <a href="#s14">Trigger Responses</a>.</i></dd>
+</dl>
+<h4>The player object</h4>
+The player is a special object, with an <tt>objecttype</tt> of
+<tt>player</tt>. This object's <tt>id</tt> attribute must also be set
+to <tt>player</tt>. If you do not add a player object. <tt>svg2vl</tt>
+will get very angry.</p>
+
+<a name="s10"><h2>10. Object types</h2>
+This is a list of all the objects you can add to your levels: (eemember, case matters! All lowercase!):
+<ul>
+<li><tt>player:</tt> The player.
+<li><tt>o_crate:</tt> Wooden crate.
+<li><tt>o_barrel:</tt> Exploding barrel.
+<li><tt>o_steel_crate:</tt> Metal box; heavy and unbreakable.
+
+<li><tt>e_unarmed_guard:</tt> Kamikaze robot, as seen in the early levels.
+<li><tt>e_mib:</tt> Man in black, as seen on the first level.
+<li><tt>e_armed_drone:</tt> Purple shooting robot.
+<li><tt>e_hunter:</tt> Bipedal attack robot.
+<li><tt>e_gladiator:</tt> Gladiator robot.
+<li><tt>e_turret1:</tt> Rotating gun turret.
+<li><tt>e_slave_turret:</tt> A turret whose rotation is fixed;
+it fires as long as a trigger is activated. (see <a href="#s14">Trigger responses</a>)
+
+<li><tt>p_health:</tt> Health pack (recharges 25 health units)
+<li><tt>p_energy_clip:</tt> Ammo clip for the energy rifle. (40 shots)
+<li><tt>p_shotgun_ammo:</tt> Ammo for the shotgun. (6 shots)
+<li><tt>p_hepa_clip:</tt> Ammo clip for the HEPA. (4 shots)
+<li><tt>p_laser_cell:</tt> Ammo for the laser. (6 shots)
+<li><tt>p_grenade:</tt> One grenade.
+<li><tt>p_esg_battery:</tt> One battery for the ESG.
+<li><tt>p_key1, p_key2, p_key3:</tt> Keys. (red, green, indigo)
+
+<li><tt>p_rifle:</tt> Energy rifle.
+<li><tt>p_shotgun:</tt> "A freakin' 12-gauge, what do you
+<i>think!</i>?"
+<li><tt>p_hepa:</tt> Highly Experimental Positron Accelerator. 'Nuff said.
+<li><tt>p_red_laser:</tt> Laser.
+<li><tt>p_esg:</tt> The EMP Shock Generator.
+
+<li><tt>exploder:</tt> An invisible exploding barrel, meant to be set
+off by a trigger.
+</ul>
+
+The following particle types have also been implemented. These values
+can be used for the <tt>particles</tt> attribute:
+<tt>part:spark, part:rainbow, part:blood, part:slime,
+part:electricity,</tt> and <tt>part:energy</tt>.
+
+<a name="s11"><h2>11. Lights (<tt>lights</tt> layer)</h2>
+Shotgun Debugger utilizes pre-computer, per-vertex lighting. You can
+specify areas of light by drawing circles in the <tt>lights</tt>
+layer. The color of the circle, naturally, determines the color of the
+light. The opacity of the circle determines the light's power, and the
+circle's radius determines its radius of illumination.</p>
+
+<h4>Additional XML attributes</h4>
+<dl>
+<dt><tt>lightspot</tt></dt>
+<dd>Determines whether or not to draw the glowing "light spot"
+underneath a light. Default is <tt>y</tt>.</dd>
+</dl>
+
+<a name="s12"><h2>12. Masks (<tt>masks</tt> layer)</h2>
+Masks are polygonal "shrouds" one can place over areas of their map to
+shield their contents from being seen until the player actually enters
+that area. This is similar to the "fog of war" effect in real-time
+strategy games.
+
+<h4>Additional XML attributes</h4>
+<dl>
+<dt><tt>h</tt></dt>
+<dd>The height of the mask. It should be the same height as the
+surrounding walls; but high enough so that polygons in the middle of
+the area don't clip through it. If you're going to use a mask in an
+area, it's good to ensure that all objects are slightly shorter than
+the mask height to prevent this.</dd>
+<dt><tt>fadespeed</tt></dt>
+<dd>How quickly the mask fades once the player enters its area. It is
+the inverse of the time it takes to fade (cf. <tt>speed</tt> for
+doors). Default is 3 (1/3 second).</dd>
+<dt><tt>reobscure</tt></dt>
+<dd>Whether this mask should cover itself back up when the player leaves
+its boundaries. Default is <tt>n</tt>.</dd>
+<dt><tt>openwhen</tt></dt>
+<dd><i>See <a href="#s14">Trigger Responses</a>.</i></dd>
+</dl>
+
+<a name="s13"><h2>13. Triggers</h2>
+<p>Shotgun Debugger incorporates a simple yet flexible trigger system to
+allow for puzzles and "scripted" events. Triggers are referred to by
+their number; 0 represents no trigger, while 1-63 are triggers
+available to the level designer.</p>
+
+<p>You can tell an object to set off a trigger by setting its
+<tt>trigger</tt> attribute; this is the number of the trigger this
+object will activate. Walls activate a trigger when touched; doors
+activate a trigger when opened; surfaces and floors activate triggers
+when an object moves onto them; objects activate triggers when they
+are killed.</p>
+
+<p>In addition, you can specify further trigger behavior with the
+<tt>trigtype</tt> attribute. It can be set to one of the following:
+<dl>
+<dt><tt>once</tt></dt>
+<dd>The trigger is set off once, and never again.</dd>
+<dt><tt>every</tt></dt>
+<dd>When an object is on a surface or a floor, the trigger is set off
+continuously every frame as long as an object is on it. This mode
+works well with slave turrets.</dd>
+<dt><tt>normal</tt></dt>
+<dd>The trigger is set off every time an object moves onto a surface
+or floor (but not every frame).</dd>
+<dt><tt>add</tt></dt>
+<dd>In this mode, all objects with this trigger number must be
+activated before the trigger is fired. For example, if three objects
+each have a <tt>trigger</tt> of <tt>4</tt> and a <tt>trigtype</tt> of
+<tt>add</tt>, then trigger #4 is set off when all three objects are
+destroyed.
+<dt><tt>whenshot</tt></dt>
+<dd>An additional modifier keyword; this means that (currently only
+for walls) the trigger is set off when it is shot, instead of just
+when it is touched. i.e. a wall with a <tt>trigtype</tt> of <tt>once
+whenshot</tt> would set off a trigger one and only one time when
+touched <i>or shot</i>. </dd>
+<dt><tt>sound1, sound2</tt></dt>
+<dd>Additional modifier keywords that indicate a sound is to be played
+when this trigger is set off. <tt>sound1</tt> plays the switch beep sound,
+<tt>sound2</tt> plays a siren sound.</dd>
+</dl>
+
+<p>Also know that the special trigger number -1 exists. Triggering -1 will result in successful level completion. Your level's goal should be a surface or wall that triggers -1, or an enemy that triggers -1 when killed.</p>
+
+<a name="s14"><h2>14. Trigger responses</h2>
+<p>Most objects can set off triggers, but several can respond to
+triggers as well. Doors can be programmed to open, unlock, or jam
+(open and permanently stay open), and objects can be programmed to
+wake up or die when a certain trigger is activated. The <tt>-when</tt>
+attributes specify the trigger numbers that cause these events.</p>
+
+<h4>For doors:</h4>
+<dl>
+<dt><tt>openwhen</tt></dt>
+<dd>The trigger number that will cause this door to open, whether it
+is locked or not.</dd>
+<dt><tt>unlockwhen</tt></dt>
+<dd>The trigger number that will cause this door to unlock.</dd>
+<dt><tt>jamwhen</tt></dt>
+<dd>The trigger number that will cause this door to open and stay open
+permanently.</dd>
+</dl>
+
+<h4>For objects:</h4>
+<dl>
+<dt><tt>wakewhen</tt></dt>
+<dd>The trigger number that will cause this object's AI to become
+alert or start attacking. Not implemented, yet.</dd>
+<dt><tt>killwhen</tt></dt>
+<dd>The trigger number that will cause this object to die.</dd>
+</dl>
+
+<h4>For masks:</h4>
+<dl>
+<dt><tt>openwhen</tt></dt>
+<dd>The trigger number that will cause this mask to reveal (or conceal) itself.</dd>
+</dl>
+
+<a name="s15"><h2>15. Paths (<tt>paths</tt> layer)</h2>
+<p>If you plan on utilizing [relatively] complex enemy AI in your level, you need to lay out a network of paths so that AI entities can navigate their way around corners and obstacles. Setting up such a network is simple; as with objects, place small rectangles (<tt>rect</tt> objects) in the <tt>paths</tt> layer, at corners and other strategic places in your level. To view the network of paths, set the option <tt>paths 1</tt> in the preferences file, or turn paths on from the configuration menu in-game.</p>
+
+<p>The fewer nodes you use, the better. Arrange your nodes such that enemies can work their way around all obstacles. Preview the network in-game frequently and try to eliminate superfluous nodes.</p>
+
+</body>
+</head>

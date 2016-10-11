@@ -1,0 +1,64 @@
+# object_table.txt revised Feb. 18, 2005
+
+# Player
+player
+
+# Miscellaneous objects
+o_crate
+o_barrel
+o_steel_crate
+o_misc1
+o_misc2
+o_misc3
+o_misc4
+o_misc5
+
+# Enemies (see design doc)
+e_unarmed_guard
+e_mib
+e_armed_drone
+e_hunter
+e_gladiator
+e_turret1
+e_slave_turret
+e_misc1
+e_misc2
+e_misc3
+e_misc4
+e_misc5
+
+# Powerups
+p_health
+p_shotgun_ammo
+p_energy_clip
+p_hepa_clip
+p_laser_cell
+p_grenade
+p_esg_battery
+p_key1
+p_key2
+p_key3
+
+# Weapon pickups (see design doc)
+p_rifle
+p_shotgun
+p_hepa
+p_red_laser
+p_esg
+
+exploder
+
+# Particles (note the part: prefix)
+part:spark
+part:blood
+part:slime
+part:electricity
+part:energy
+part:water
+part:wood
+part:tile
+part:misc1
+part:misc2
+part:misc3
+part:misc4
+part:misc5

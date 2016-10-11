@@ -1,0 +1,80 @@
+`Welcome to LX.
+`Last login: 22-may-75 02:42:34
+`You have 2 unread mail messages.
+
+~1.0
+Alright, let's do this thing.
+~1.0
+
+`> run crackerjack
+
+~2.0
+`welcome to crackerjack v.666 by th0r & 0d1n
+`host address:
+~1.0
+`2001:0db8:85a3:08d3:1319:8a2e:0370:7334
+
+~0.5
+`contacting host 2001:0db8:85a3:08d3:1319:8a2e:0370:7334...
+~2.5
+`response received
+
+~1.5
+`SECURITY LEVEL RED
+`UNAUTHORIZED ACCESS PUNISHABLE BY DEATH
+~1.5
+`command:
+~0.75
+
+Whoa, looks like I'm gonna need protection.
+~1.0
+
+`set stealth 5
+
+~0.5
+`stealth level set to 5. establishing proxy connections...
+~2.5
+`complete
+`command:
+~1.0
+
+Alright, let's see what you've got.
+~1.0
+
+`login guest
+
+~0.5
+`logging in...
+~1.5
+`guest access not supported, obtaining credentials
+~0.5
+`initiating password cracker...
+~1.5
+Come on...
+~1.5
+`progress: 33%
+~0.25
+I don't have time for this...
+~1.4
+`progress: 66%
+~0.25
+Hurry up...
+~1.0
+`progress: 
+~2.5
+
+`PRIORITY ALERT
+`SYSTEM INTRUSION DETECTED
+`LOCATING ATTACKER...
+~0.5
+
+DAMN!
+`abort
+`abort
+`abort
+
+`YOUR LOCATION HAS BEEN DISCOVERED
+`YOUR AREA WILL BE SURROUNDED MOMENTARILY
+`PREPARE TO SURRENDER
+~0.5
+ 

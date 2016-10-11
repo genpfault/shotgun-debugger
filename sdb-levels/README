@@ -1,0 +1,106 @@
+svg2vl - the SVG to VL converter for Shotgun Debugger
+Copyright 2005 Game Creation Society
+ 
+Matt Sarnoff
+http://www.msarnoff.org
+http://www.gamecreation.org
+May 6, 2005
+ 
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 2
+of the License, or (at your option) any later version.
+ 
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+===========================================================================
+
+Contents
+--------
+1. Overview
+2. Installation
+3. Use
+4. Other
+
+1. Overview
+-----------
+svg2vl is a tool used for creating levels for Shotgun Debugger. It allows you
+to design your levels in Inkscape (a free, open-source vector graphics editor
+available at www.inkscape.org), then convert them from SVG format to the 
+flat-file vl format understood by Shotgun Debugger.
+
+Inkscape works with the SVG format, an XML language. It provides a handy XML
+editor, which is used extensively for adding properties to the level (such
+as object types, triggers, wall heights, etc.) that cannot be adequately
+conveyed by the geometry. Also, the hierarchical structure allows objects
+to inherit properties and transformations--a real timesaver.
+
+svg2vl is a Perl script and requires several modules to function. It has only
+been tested with Inkscape 0.40. Newer versions may break the script; however,
+since I'm lazy, the chances that I'll update this are slim.
+
+
+2. Installation
+---------------
+If you're on a *nix system, you've already got Perl. You may, however, need
+to install the SVG-related modules from CPAN, the Comprehensive Perl Archive
+Network, as follows.
+
+Run the following commands as root (# indicates the command prompt)
+
+# perl -MCPAN -e shell
+...messages...
+cpan> install SVG
+...SVG installs...
+cpan> install SVG::Parser
+...SVG:Parser installs...
+
+That should install the modules needed by svg2vl. 
+
+
+If you're on Windows, you're going to need to install a Perl distribution.
+ActivePerl from www.activestate.com works well. Instead of accessing CPAN
+from perl, you use ppm.
+
+Once ppm has started, run the following commands as above:
+install SVG
+install SVG::Parser
+
+If you're on Windows, feel free to rename svg2vl to svg2vl.pl. It'll get
+a nice icon.
+
+For more help on installing the Perl modules, see the related documentation.
+
+
+3. Use
+------
+For *nix, invoke svg2vl on the command line by typing
+./svg2vl svg_file
+
+(where svg_file is the name of the Inkscape SVG you'd like to convert.
+The .svg extension is optional.)
+
+On Windows, try dragging your SVG file's icon onto the svg2vl.pl icon
+in Explorer. Or, assuming you have Perl set up properly, you can just
+type
+svg2vl.pl svg_file
+
+The script runs, and produces a .vl file in the same directory as the SVG.
+This file can then be played in Shotgun Debugger.
+
+For more information on the VL format and designing levels, see the
+leveldesign.html file that accompaines this document.
+
+
+4. Other
+--------
+The file "level1.svg" that comes with this package has large amounts of
+unnecessary geometry. The compiled file (level1.vl) that comes with
+Shotgun Debugger 1.1 has been stripped of this unnecessary geometry, but
+the smaller SVG file used to generate it has been lost. :(
