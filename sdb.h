@@ -87,17 +87,24 @@ using namespace std;
 
 #define PACKAGE_RELEASE_DATE "June 15, 2005"
 
+// shared data file location
 #ifndef PKGDATADIR
 #ifdef _WIN32
 #define PKGDATADIR "./"
-#define LOCALSTATEDIR "/.sdb/"
 #elif __MACOSX__
 #define PKGDATADIR "./Shotgun Debugger.app/Contents/Resources/"
-#define LOCALSTATEDIR "/Library/Application Support/Shotgun Debugger/" // relative to home dir
 #else
 #define PKGDATADIR "/usr/local/share/shotgun-debugger"
-#define LOCALSTATEDIR "/.sdb/"
 #endif
+#endif
+
+// per-user settings location
+#ifdef _WIN32
+#define LOCALSTATEDIR "/.sdb/"
+#elif __MACOSX__
+#define LOCALSTATEDIR "/Library/Application Support/Shotgun Debugger/" // relative to home dir
+#else
+#define LOCALSTATEDIR "/.sdb/"
 #endif
 
 #define CONFIG_FILE "preferences.txt"

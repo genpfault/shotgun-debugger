@@ -23,7 +23,10 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
  
- #include "sdb.h"
+#include "sdb.h"
+
+// TODO: replace with std::numeric_limits<>
+#include <climits>
 
 float SCREEN_TOP;
 float SCREEN_CENTER;
