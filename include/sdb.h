@@ -26,51 +26,39 @@
 #ifndef _SDB_H_
 #define _SDB_H_
 
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif
-
-#include <stdlib.h>
-#include <unistd.h>
-#include <stdarg.h>
-#include <math.h>
-#include <string.h>
-#include <sys/stat.h>
+#include <cstdlib>
+#include <cmath>
 #include <vector>
 #include <fstream>
 #include <iostream>
 
+#include <SDL.h>
+#include <SDL_opengl.h>
+#include <SDL_image.h>
+#include <SDL_mixer.h>
 
-
-#ifdef __MACOSX__
-#include <SDL/SDL.h>
-#include <SDL_image/SDL_image.h>
-#include <SDL_mixer/SDL_mixer.h>
-#include <OpenGL/gl.h>
-#include <OpenGL/glu.h>
-#else
-#include <SDL/SDL.h>
-#include <SDL/SDL_image.h>
-#include <SDL/SDL_mixer.h>
-#include <GL/gl.h>
-#include <GL/glu.h>
-#endif
-
-// Includes for timing functions
 #ifdef _WIN32
-#include <windows.h>
+    // TODO: verify validity
+    #ifndef snprintf
+        #include <cstdio>
+        #define snprintf _snprintf
+    #endif
+
+    #include <direct.h>
+    inline void mkdir( const char* dir, int )
+    {
+        _mkdir( dir );
+    }
 #else
-#include <sys/time.h>
+    #include <sys/stat.h>
+    #include <sys/types.h>
 #endif
 
 #define MD2_SUFFIX ".md2"
 
 using namespace std;
 
-// compensate for Microsoft's stupidity
-#ifdef _WIN32
-#define CALLBACK __stdcall
-#else
+#ifndef CALLBACK
 #define CALLBACK
 #endif
 
@@ -120,8 +108,8 @@ using namespace std;
 //#endif
 
 #define NEXT_TOK  nextToken(line, start, end)
-#define S2F(x)    strtof(x.c_str(), NULL)
-#define S2I(x)    strtol(x.c_str(), NULL, 10)
+#define S2F(x)    atof(x.c_str())
+#define S2I(x)    atol(x.c_str())
 
 #define X  0
 #define Y  1

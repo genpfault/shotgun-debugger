@@ -6,7 +6,7 @@ include_directories( "include" )
 add_executable( shotgun-debugger ${glob_SRC} )
 
 # point PKGDATADIR at the right place
-add_definitions( -DPKGDATADIR="${CMAKE_INSTALL_PREFIX}/" )
+add_definitions( "-DPKGDATADIR=\"${CMAKE_INSTALL_PREFIX}/\"" )
 
 install( TARGETS shotgun-debugger DESTINATION . )
 install( DIRECTORY res/ DESTINATION . )

@@ -24,6 +24,8 @@
  */
 
 #include "sdb.h"
+#include <ctime>
+#include <string>
 
 bool GFXMODE_ISACTIVE;
 BitmapFont font;

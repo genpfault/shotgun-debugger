@@ -27,6 +27,7 @@
  */
  
 #include "sdb.h"
+#include <string>
 
 void Player::set(int obj)
 {

@@ -23,7 +23,8 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
  
- #include "sdb.h"
+#include "sdb.h"
+#include <string>
 
 void TerminalWindow::set(float px, float py, int r, int c, float cw, float ch, float t, float rt, RGBAColor fg, RGBAColor bg)
 {

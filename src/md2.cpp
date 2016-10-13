@@ -27,7 +27,20 @@
  */
 
 #include "sdb.h"
-#include "byteswap.h"
+#include <string>
+
+// https://commandcenter.blogspot.de/2012/04/byte-order-fallacy.html
+// https://www.reddit.com/r/programming/comments/248gzy/portable_endianh/
+
+// Read Intel-order (little-endian) 16 bit unsigned integer
+#define ReadI16(a) ( ((((unsigned char *) a)[1]) <<  8) | \
+                     ((((unsigned char *) a)[0])) )
+
+// Read Intel-order (little-endian) 32 bit unsigned integer
+#define ReadI32(a) ( ((((unsigned char *) a)[3]) << 24) | \
+                     ((((unsigned char *) a)[2]) << 16) | \
+                     ((((unsigned char *) a)[1]) <<  8) | \
+                     ((((unsigned char *) a)[0])) )
 
 void ModelObject::draw()
 {
@@ -145,24 +158,26 @@ bool MD2Loader::ImportMD2(Model *pModel, const char *strFileName, int textureInd
   if(!m_FilePointer) 
     errorMessage(8, "FLAGRANT SYSTEM ERROR", "Unable to load model %s", strFileName);
 
-  fread(&m_Header, 1, sizeof(tMd2Header), m_FilePointer);
-  m_Header.magic            = letoh32(m_Header.magic);
-  m_Header.version          = letoh32(m_Header.version);
-  m_Header.skinWidth        = letoh32(m_Header.skinWidth);
-  m_Header.skinHeight       = letoh32(m_Header.skinHeight);
-  m_Header.frameSize        = letoh32(m_Header.frameSize);
-  m_Header.numSkins         = letoh32(m_Header.numSkins);
-  m_Header.numVertices      = letoh32(m_Header.numVertices);
-  m_Header.numTexCoords     = letoh32(m_Header.numTexCoords);
-  m_Header.numTriangles     = letoh32(m_Header.numTriangles);
-  m_Header.numGlCommands    = letoh32(m_Header.numGlCommands);
-  m_Header.numFrames        = letoh32(m_Header.numFrames);
-  m_Header.offsetSkins      = letoh32(m_Header.offsetSkins);
-  m_Header.offsetTexCoords  = letoh32(m_Header.offsetTexCoords);
-  m_Header.offsetTriangles  = letoh32(m_Header.offsetTriangles);
-  m_Header.offsetFrames     = letoh32(m_Header.offsetFrames);
-  m_Header.offsetGlCommands = letoh32(m_Header.offsetGlCommands);
-  m_Header.offsetEnd        = letoh32(m_Header.offsetEnd);
+  unsigned char buf[ sizeof(tMd2Header) ] = { 0 };
+  size_t offset = 0;
+  fread(buf, sizeof(tMd2Header), 1, m_FilePointer);
+  m_Header.magic            = ReadI32( &buf[ offset ] ); offset += 4;
+  m_Header.version          = ReadI32( &buf[ offset ] ); offset += 4;
+  m_Header.skinWidth        = ReadI32( &buf[ offset ] ); offset += 4;
+  m_Header.skinHeight       = ReadI32( &buf[ offset ] ); offset += 4;
+  m_Header.frameSize        = ReadI32( &buf[ offset ] ); offset += 4;
+  m_Header.numSkins         = ReadI32( &buf[ offset ] ); offset += 4;
+  m_Header.numVertices      = ReadI32( &buf[ offset ] ); offset += 4;
+  m_Header.numTexCoords     = ReadI32( &buf[ offset ] ); offset += 4;
+  m_Header.numTriangles     = ReadI32( &buf[ offset ] ); offset += 4;
+  m_Header.numGlCommands    = ReadI32( &buf[ offset ] ); offset += 4;
+  m_Header.numFrames        = ReadI32( &buf[ offset ] ); offset += 4;
+  m_Header.offsetSkins      = ReadI32( &buf[ offset ] ); offset += 4;
+  m_Header.offsetTexCoords  = ReadI32( &buf[ offset ] ); offset += 4;
+  m_Header.offsetTriangles  = ReadI32( &buf[ offset ] ); offset += 4;
+  m_Header.offsetFrames     = ReadI32( &buf[ offset ] ); offset += 4;
+  m_Header.offsetGlCommands = ReadI32( &buf[ offset ] ); offset += 4;
+  m_Header.offsetEnd        = ReadI32( &buf[ offset ] ); offset += 4;
 
   if(m_Header.version != 8)
     errorMessage(8, "FLAGRANT SYSTEM ERROR", "Invalid file format (version not 8) %s", strFileName);
@@ -214,22 +229,33 @@ void MD2Loader::ReadMD2Data()
   fseek(m_FilePointer, m_Header.offsetTexCoords, SEEK_SET);
   
   // Read in all the texture coordinates in one fell swoop
-  fread(m_pTexCoords, sizeof(tMd2TexCoord), m_Header.numTexCoords, m_FilePointer);
-  for (int i=0; i < m_Header.numTexCoords; ++i) {
-    m_pTexCoords[i].u = letoh16(m_pTexCoords[i].u);
-    m_pTexCoords[i].v = letoh16(m_pTexCoords[i].v);
+  {
+     std::vector< unsigned char > buf( sizeof(tMd2TexCoord) * m_Header.numTexCoords, 0 );
+     size_t offset = 0;
+     fread( &buf[0], sizeof(tMd2TexCoord), m_Header.numTexCoords, m_FilePointer);
+     for (int i=0; i < m_Header.numTexCoords; ++i) {
+       m_pTexCoords[i].u = ReadI16( &buf[ offset ] ); offset += 2;
+       m_pTexCoords[i].v = ReadI16( &buf[ offset ] ); offset += 2;
+     }
   }
 
   // Move the file pointer to the triangles/face data offset
   fseek(m_FilePointer, m_Header.offsetTriangles, SEEK_SET);
   
   // Read in the face data for each triangle (vertex and texCoord indices)
-  fread(m_pTriangles, sizeof(tMd2Face), m_Header.numTriangles, m_FilePointer);
-  for (int i=0; i < m_Header.numTriangles; ++i) {
-    for (int j=0; j < 3; ++j) {
-      m_pTriangles[i].vertexIndices[j]  = letoh16(m_pTriangles[i].vertexIndices[j]);
-      m_pTriangles[i].textureIndices[j] = letoh16(m_pTriangles[i].textureIndices[j]);
-    }
+  {
+     std::vector< unsigned char > buf( sizeof(tMd2Face) * m_Header.numTriangles, 0 );
+     size_t offset = 0;
+     fread(&buf[0], sizeof(tMd2Face), m_Header.numTriangles, m_FilePointer);
+     for (int i=0; i < m_Header.numTriangles; ++i)
+     {
+         m_pTriangles[i].vertexIndices[0]  = ReadI16( &buf[ offset ] ); offset += 2;
+         m_pTriangles[i].vertexIndices[1]  = ReadI16( &buf[ offset ] ); offset += 2;
+         m_pTriangles[i].vertexIndices[2]  = ReadI16( &buf[ offset ] ); offset += 2;
+         m_pTriangles[i].textureIndices[0] = ReadI16( &buf[ offset ] ); offset += 2;
+         m_pTriangles[i].textureIndices[1] = ReadI16( &buf[ offset ] ); offset += 2;
+         m_pTriangles[i].textureIndices[2] = ReadI16( &buf[ offset ] ); offset += 2;
+     }
   }
       
   // Move the file pointer to the vertices (frames)
@@ -241,10 +267,11 @@ void MD2Loader::ReadMD2Data()
 
     // Read in the first frame of animation
     fread(pFrame, 1, m_Header.frameSize, m_FilePointer);
-    for (int j=0; j < 3; ++j) {
-      pFrame->scale[j]     = letohf(pFrame->scale[j]);
-      pFrame->translate[j] = letohf(pFrame->translate[j]);
-    }
+    // IEEE floats are always little-endian, even on big-endian systems?
+    //for (int j=0; j < 3; ++j) {
+    //  pFrame->scale[j]     = letohf(pFrame->scale[j]);
+    //  pFrame->translate[j] = letohf(pFrame->translate[j]);
+    //}
 
     m_pFrames[i].pVertices = new tMd2Triangle [m_Header.numVertices];
       

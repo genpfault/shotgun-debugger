@@ -28,6 +28,9 @@
 // TODO: replace with std::numeric_limits<>
 #include <climits>
 
+#include <ctime>
+#include <string>
+
 float SCREEN_TOP;
 float SCREEN_CENTER;
 float SCREEN_ASPECT;
@@ -466,7 +469,21 @@ void gameInitSDL()
   if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO) < 0)
     errorMessage(1, "FLAGRANT SYSTEM ERROR", "Could not initialize SDL (%s)", SDL_GetError());
 
-  atexit(SDL_Quit);
+  // init SDL_image
+  {
+     const int reqFlags = IMG_INIT_JPG | IMG_INIT_PNG | IMG_INIT_TIF;
+     const int gotFlags = IMG_Init( reqFlags );
+     if( ( gotFlags & reqFlags ) != reqFlags )
+        errorMessage( 1, "FLAGRANT SYSTEM ERROR", "IMG_Init: %s", IMG_GetError() );
+  }
+
+  // init SDL_mixer
+  {
+     const int reqFlags = MIX_INIT_OGG;
+     const int gotFlags = Mix_Init( reqFlags );
+     if( ( gotFlags & reqFlags ) != reqFlags )
+        errorMessage( 1, "FLAGRANT SYSTEM ERROR", "Mix_Init: %s", Mix_GetError() );
+  }
 
   SDL_WM_SetCaption(PACKAGE_NAME, PACKAGE_NAME);
   printf("ok\n");
@@ -565,6 +582,15 @@ void gameInitTessellator()
 void gameLoadSprites()
 {
   printf("  Loading sprites...");
+
+  // special-case the font image because errorMessage() won't work without it
+  texdata[TEX_FONT] = IMG_Load(PKGDATADIR"sprites/font3.png");
+  if( NULL == texdata[TEX_FONT] )
+  {
+     printf( "IMG_Load(): %s\n", IMG_GetError() );
+     exit( 3 );
+  }
+
   // allocate texture space
   glGenTextures(NUM_TEXTURES, textures);
   int i;
@@ -572,7 +598,6 @@ void gameLoadSprites()
   {
     switch(i)
     {
-      case TEX_FONT:                texdata[i] = IMG_Load(PKGDATADIR"sprites/font3.png"); break;
       case TEX_SHADOW:              texdata[i] = IMG_Load(PKGDATADIR"sprites/shadow.png"); break;
       case TEX_LIGHT:               texdata[i] = IMG_Load(PKGDATADIR"sprites/light.png"); break;
       case TEX_SCANLINES:           texdata[i] = IMG_Load(PKGDATADIR"sprites/scanlines.png"); break;      
@@ -657,7 +682,13 @@ void gameLoadSprites()
     glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_LINEAR);
     SDL_LockSurface(texdata[i]);
-	GLenum format = (texdata[i]->format->Rshift == 16) ? GL_BGRA : GL_RGBA;
+
+// TODO: replace with GLEW or something & a GL version check
+#ifndef GL_BGRA
+#define GL_BGRA 0x80E1
+#endif
+
+    GLenum format = (texdata[i]->format->Rshift == 16) ? GL_BGRA : GL_RGBA;
     glTexImage2D(GL_TEXTURE_2D, 0, 4, texdata[i]->w, texdata[i]->h,
               0, format, GL_UNSIGNED_BYTE, texdata[i]->pixels);
     SDL_UnlockSurface(texdata[i]);
@@ -878,6 +909,11 @@ void gameShutdown()
   for(vector<GLdouble *>::iterator i = tessAllocatedVertices.begin(); i != tessAllocatedVertices.end(); i++)
     free(*i);
   Mix_CloseAudio();
+
+  Mix_Quit();
+  IMG_Quit();
+  SDL_Quit();
+
   printf("ok\nEnd program\n");
 }
 
@@ -2007,25 +2043,10 @@ void drawObjectShadows(int cMinX, int cMinY, int cMaxX, int cMaxY)
   }
 }
 
+// TODO: convert to SDL2's perfcounter queries
 double Timer::timerFunc()
 {
-  #ifdef _WIN32
-  LARGE_INTEGER count, freq;
-  if (QueryPerformanceCounter(&count))
-  {
-    QueryPerformanceFrequency(&freq);
-    return (double)count.QuadPart/freq.QuadPart;
-  }
-  else
-    return SDL_GetTicks() / 1000.0;  
-  #else
-  struct timeval tm;
-  struct timezone tz;
-  gettimeofday(&tm, &tz);
-  
-  // Convert a timeval to a double
-  return (double)(tm.tv_sec) + ((double)(tm.tv_usec) * 0.000001);
-  #endif
+  return SDL_GetTicks() / 1000.0;
 }  
 
 void Timer::update()
