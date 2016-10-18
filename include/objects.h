@@ -553,7 +553,7 @@ class Object : public LevelObject
     virtual char keyState(int wp) { return 0; }
     virtual Vector2D* WeaponPoint() { return NULL; }
     
-    void giveKey(int key) { keys |= 1 << key-1; }
+    void giveKey(int key) { keys |= 1 << (key-1); }
     virtual void givePowerup(int idx) {}
     
     void resetCollided() { collided = -1; }

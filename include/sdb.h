@@ -162,7 +162,7 @@ using namespace std;
 #define LAUNCH_MULTI_PARTICLES_C(num,tp,x,y,ht,ang,al,sp,cr,cg,cb) for (int pt = 0; pt < num; pt++) \
   launchParticle(tp, x, y, ht, ang, al, sp, cr, cg, cb)
   
-#define HAS_KEY(x,y)    (x & 1 << y-1)
+#define HAS_KEY(x,y)    (x & 1 << (y-1))
 #define HAS_WEAPON(x,y) (x & 1 << y)
 
 #define DEFAULT_SURFACE_FRICTION  0.3

@@ -1825,7 +1825,7 @@ int playCurrentLevel(bool playInSequence)
       
       
       // Message display
-      if (message != "" && messageTime > 0)
+      if (message != std::string("") && messageTime > 0)
       {
         glColor4f(0.2, 0.2, 1.0, messageTime/MESSAGE_DELAY_TIME);
         font.printf(-95.0, -SCREEN_TOP+14.0, 3.7, 3.2, "%s", message);

@@ -101,7 +101,7 @@ float InputHandler::bindingState(int key)
     else
       return (keystate[key]) ? 1 : 0;
   }
-  else
-    return 0.0;
+
+  return 0.0;
 }
 

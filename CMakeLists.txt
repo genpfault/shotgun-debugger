@@ -1,4 +1,4 @@
-cmake_minimum_required( VERSION 3.0.2 )
+cmake_minimum_required( VERSION 2.8.7 )
 project( ShotgunDebugger )
 
 file( GLOB glob_SRC "include/*.h" "src/*.cpp" )
@@ -16,27 +16,17 @@ install( DIRECTORY res/ DESTINATION . )
 # http://stackoverflow.com/questions/23995019/what-is-the-modern-method-for-setting-general-compile-flags-in-cmake
 
 find_package( SDL REQUIRED )
-if( SDL_FOUND )
-  include_directories( ${SDL_INCLUDE_DIR} )
-  target_link_libraries( shotgun-debugger ${SDL_LIBRARY} )
-endif( SDL_FOUND )
+include_directories( ${SDL_INCLUDE_DIR} )
+target_link_libraries( shotgun-debugger ${SDL_LIBRARY} )
 
 find_package( SDL_image REQUIRED )
-if( SDL_IMAGE_FOUND )
-  include_directories( ${SDL_IMAGE_INCLUDE_DIRS} )
-  target_link_libraries( shotgun-debugger ${SDL_IMAGE_LIBRARIES} )
-endif( SDL_IMAGE_FOUND )
+include_directories( ${SDLIMAGE_INCLUDE_DIR} )
+target_link_libraries( shotgun-debugger ${SDLIMAGE_LIBRARY} )
 
 find_package( SDL_mixer REQUIRED )
-if( SDL_MIXER_FOUND )
-  include_directories( ${SDL_MIXER_INCLUDE_DIRS} )
-  target_link_libraries( shotgun-debugger ${SDL_MIXER_LIBRARIES} )
-endif( SDL_MIXER_FOUND )
+include_directories( ${SDLMIXER_INCLUDE_DIR} )
+target_link_libraries( shotgun-debugger ${SDLMIXER_LIBRARY} )
 
 find_package( OpenGL REQUIRED )
-if( OPENGL_FOUND )
-  include_directories( ${OPENGL_INCLUDE_DIR} )
-  target_link_libraries( shotgun-debugger ${OPENGL_LIBRARIES} )
-endif( OPENGL_FOUND )
-
-
+include_directories( ${OPENGL_INCLUDE_DIR} )
+target_link_libraries( shotgun-debugger ${OPENGL_LIBRARIES} )
