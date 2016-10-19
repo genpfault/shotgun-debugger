@@ -11,6 +11,12 @@ add_definitions( "-DPKGDATADIR=\"${CMAKE_INSTALL_PREFIX}/\"" )
 install( TARGETS shotgun-debugger DESTINATION . )
 install( DIRECTORY res/ DESTINATION . )
 
+
+if( ${CMAKE_SYSTEM_NAME} MATCHES "Darwin" )
+    # TODO: remove after switching to GLM & a 3rd-party triangulation library
+    set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-deprecated-declarations" )
+endif()
+
 # TODO:
 # flags: -O2 -Wall -ansi
 # http://stackoverflow.com/questions/23995019/what-is-the-modern-method-for-setting-general-compile-flags-in-cmake
