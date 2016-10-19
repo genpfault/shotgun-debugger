@@ -1,0 +1,38 @@
+platform:
+  - x86
+  - x64
+
+configuration:
+  - Debug
+  - Release
+
+install:
+  - IF NOT EXIST %APPVEYOR_BUILD_FOLDER%\SDL-devel-1.2.15-VC.zip appveyor DownloadFile https://libsdl.org/release/SDL-devel-1.2.15-VC.zip
+  - IF NOT EXIST %APPVEYOR_BUILD_FOLDER%\SDL_image-devel-1.2.12-VC.zip appveyor DownloadFile https://www.libsdl.org/projects/SDL_image/release/SDL_image-devel-1.2.12-VC.zip
+  - IF NOT EXIST %APPVEYOR_BUILD_FOLDER%\SDL_mixer-devel-1.2.12-VC.zip appveyor DownloadFile https://www.libsdl.org/projects/SDL_mixer/release/SDL_mixer-devel-1.2.12-VC.zip
+  - mkdir c:\sdl-dist
+  - mkdir c:\sdl-dist\include
+  - mkdir c:\sdl-dist\lib
+  - 7z x SDL-devel-1.2.15-VC.zip
+  - xcopy /s /y SDL-1.2.15\include\* c:\sdl-dist\include\
+  - xcopy /s /y SDL-1.2.15\lib\* c:\sdl-dist\lib\
+  - 7z x SDL_image-devel-1.2.12-VC.zip
+  - xcopy /s /y SDL_image-1.2.12\include\* c:\sdl-dist\include\
+  - xcopy /s /y SDL_image-1.2.12\lib\* c:\sdl-dist\lib\
+  - 7z x SDL_mixer-devel-1.2.12-VC.zip
+  - xcopy /s /y SDL_mixer-1.2.12\include\* c:\sdl-dist\include\
+  - xcopy /s /y SDL_mixer-1.2.12\lib\* c:\sdl-dist\lib\
+
+before_build:
+  - mkdir build
+  - cd build
+  - if "%PLATFORM%"=="x86" (cmake -DCMAKE_PREFIX_PATH="c:\sdl-dist" -G "Visual Studio 12 2013" ..)
+  - if "%PLATFORM%"=="x64" (cmake -DCMAKE_PREFIX_PATH="c:\sdl-dist" -G "Visual Studio 12 2013 Win64" ..)
+
+build_script:
+  - cmake --build . --target ALL_BUILD --config %CONFIGURATION%
+  
+cache:
+  - SDL-devel-1.2.15-VC.zip
+  - SDL_image-devel-1.2.12-VC.zip
+  - SDL_mixer-devel-1.2.12-VC.zip
