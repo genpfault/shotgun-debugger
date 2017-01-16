@@ -1,0 +1,16 @@
+# usage at top level of repo:
+# astyle --options=.astylerc "include/*.h" "src/*.cpp"
+
+--style=allman
+
+--indent=spaces=4
+--indent-col1-comments
+--pad-oper
+--pad-paren-in
+--unpad-paren
+--align-pointer=type
+--align-reference=type
+--convert-tabs
+--mode=c
+
+--suffix=none
