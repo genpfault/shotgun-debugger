@@ -7,7 +7,7 @@
  * http://www.gamecreation.org
  *
  * input.h - header file for input handler
- * 
+ *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
@@ -29,29 +29,33 @@
 #include "sdb.h"
 
 enum INPUT_KEYS {KEY_LEFT, KEY_RIGHT, KEY_FWD, KEY_BACK, KEY_STRAFE_L, KEY_STRAFE_R,
-KEY_JUMP, KEY_FIRE, KEY_GRENADE, KEY_RELOAD, KEY_SWITCH_WPN, KEY_SWITCH_VIEW, KEY_ZOOM_OUT, NUM_INPUT_KEYS};
+                 KEY_JUMP, KEY_FIRE, KEY_GRENADE, KEY_RELOAD, KEY_SWITCH_WPN, KEY_SWITCH_VIEW, KEY_ZOOM_OUT, NUM_INPUT_KEYS
+                };
 
 // see sdb.h for relevant defines/macros
 
 class InputHandler
 {
-  public:
-    InputHandler() { defaultBindings(); }
-    void bindKey(int action, int sym1, int sym2);
-    void defaultBindings();
-    void setKeyBindings(SDLKey keys[NUM_INPUT_KEYS]);
-    float bindingState(int key);
-    float state(int action)
+public:
+    InputHandler()
     {
-      if (bindingState(keysym1[action]))
-        return bindingState(keysym1[action]);
-      else if (keysym2[action] != NO_KEY)
-        return bindingState(keysym2[action]);
-      else
-        return 0;
+        defaultBindings();
     }
-    
-  private:
+    void bindKey( int action, int sym1, int sym2 );
+    void defaultBindings();
+    void setKeyBindings( SDLKey keys[NUM_INPUT_KEYS] );
+    float bindingState( int key );
+    float state( int action )
+    {
+        if( bindingState( keysym1[action] ) )
+            return bindingState( keysym1[action] );
+        else if( keysym2[action] != NO_KEY )
+            return bindingState( keysym2[action] );
+        else
+            return 0;
+    }
+
+private:
     int keysym1[NUM_INPUT_KEYS];
     int keysym2[NUM_INPUT_KEYS];
 };

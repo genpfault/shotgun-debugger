@@ -7,7 +7,7 @@
  * http://www.gamecreation.org
  *
  * player.h - header file for player data functions
- * 
+ *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
@@ -25,7 +25,7 @@
  * MD2 model loader by DigiBen, www.gametutorials.com. Adapted from his code.
  * The MD2 model format is copyright id software, inc.
  */
- 
+
 #ifndef _PLAYER_H_
 #define _PLAYER_H_
 
@@ -39,52 +39,75 @@
 
 struct Stats
 {
-  float time;
-  int kills;
-  int shots;
-  int hits;
+    float time;
+    int kills;
+    int shots;
+    int hits;
 };
 
 
 class Player
 {
-  public:
-    Player() { set(0); }
-    Player(int obj) { set(obj); }
-    void set(int obj);
+public:
+    Player()
+    {
+        set( 0 );
+    }
+    Player( int obj )
+    {
+        set( obj );
+    }
+    void set( int obj );
     void dataDefaults();
     void eraseRecords();
     void eraseSavedGame();
-    void resetLevelProgress() { levelProgress = 0; canAugment = false; }
+    void resetLevelProgress()
+    {
+        levelProgress = 0;
+        canAugment = false;
+    }
     void loadPlayerData();
     void writePlayerData();
-    void setKeys(SDLKey keys[13]) { ih.setKeyBindings(keys); }
-    bool hasGoodChecksum(int cksum);
-    void resetCurrentLevelStats() { gameTime = 0.0; kills = shots = hits = 0; }
+    void setKeys( SDLKey keys[13] )
+    {
+        ih.setKeyBindings( keys );
+    }
+    bool hasGoodChecksum( int cksum );
+    void resetCurrentLevelStats()
+    {
+        gameTime = 0.0;
+        kills = shots = hits = 0;
+    }
     int checksum();
     void unlockLevel();
-    void setLevel(int l);
-    void saveLevelData(bool playInSequence);
+    void setLevel( int l );
+    void saveLevelData( bool playInSequence );
     void computeFinalStatistics();
     void saveFinalStatistics();
     void update();
     float totalTime();
     InputHandler ih;
-    bool HeadingLock() { return headingLock; }
-    float cameraZoom() { return zoom; }
-    
+    bool HeadingLock()
+    {
+        return headingLock;
+    }
+    float cameraZoom()
+    {
+        return zoom;
+    }
+
     /*** Saved data ***/
-    // Status   
+    // Status
     int levelProgress;
-    
+
     // Records
-    Stats levelRecords[NUM_LEVELS+1];
-    
+    Stats levelRecords[NUM_LEVELS + 1];
+
     // Current game
     int startingLevel; // -1 indicates no saved game
-    int level; 
-    Stats currStats[NUM_LEVELS+1];
-    
+    int level;
+    Stats currStats[NUM_LEVELS + 1];
+
     // Current level stats
     float gameTime;
     int kills;
@@ -92,15 +115,15 @@ class Player
     int hits;
     bool cheated;
     bool usedAugment;
-    
+
     bool canAugment;
     bool augmented;
-  private:
+private:
     int object; // the object that the player controls
-                // (an index in the global array)
+    // (an index in the global array)
     bool headingLock;
     bool hlReady;
-    
+
     float zoom;
 };
 

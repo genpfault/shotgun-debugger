@@ -7,7 +7,7 @@
  * http://www.gamecreation.org
  *
  * enemies.h - header file for enemy AI routines
- * 
+ *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
@@ -33,45 +33,66 @@ enum AI_TASKS {AIT_STOP, AIT_INVESTIGATE, AIT_ATTACK};
 
 class AI
 {
-  public:
-    AI() { set(ASLEEP, 1, -1, 0, 0, 0); }
-    AI(int obj, int tgt) { set(AWAKE, obj, tgt, 0, 0, 0); }
-    AI(int obj, int tgt, int st, float sigr, float ad, float fov) { set(st, obj, tgt, sigr, ad, fov); }
-    void set(int st, int obj, int tgt, float sigr, float ad, float fov);
+public:
+    AI()
+    {
+        set( ASLEEP, 1, -1, 0, 0, 0 );
+    }
+    AI( int obj, int tgt )
+    {
+        set( AWAKE, obj, tgt, 0, 0, 0 );
+    }
+    AI( int obj, int tgt, int st, float sigr, float ad, float fov )
+    {
+        set( st, obj, tgt, sigr, ad, fov );
+    }
+    void set( int st, int obj, int tgt, float sigr, float ad, float fov );
     virtual void update() {}
-    
-    void angleCalculations(bool targetOrNode);
-    void distanceCalculation(bool targetOrNode);
-    bool wallOccludeCalculation();
-    
-    float getAngle(Vector2D pos);
-    float getAngleDiff(float a1, float a2);
-    float getDistance(Vector2D pos);
-    
-    void setNodePriorities(Vector2D pos);
-    void setChildNodePriorities(vector<int> children, int priority);
-    
-    int State()  { return state; }
-    int Object() { return object; }
-    int Target() { return target; }
-    
-    void setMoveTarget(Vector2D tgtPos, int tsk);
-    void updateMoveTarget();
-    
-    void setState(int st) { state = st; }
 
-    void sendAlertSignal(double dst);
-    
-  //protected:
+    void angleCalculations( bool targetOrNode );
+    void distanceCalculation( bool targetOrNode );
+    bool wallOccludeCalculation();
+
+    float getAngle( Vector2D pos );
+    float getAngleDiff( float a1, float a2 );
+    float getDistance( Vector2D pos );
+
+    void setNodePriorities( Vector2D pos );
+    void setChildNodePriorities( vector<int> children, int priority );
+
+    int State()
+    {
+        return state;
+    }
+    int Object()
+    {
+        return object;
+    }
+    int Target()
+    {
+        return target;
+    }
+
+    void setMoveTarget( Vector2D tgtPos, int tsk );
+    void updateMoveTarget();
+
+    void setState( int st )
+    {
+        state = st;
+    }
+
+    void sendAlertSignal( double dst );
+
+    //protected:
     int state;  // Asleep, awake, attacking
     int object; // Object this AI controls
     int target; // This AI's target
-    
+
     // Properties
     float signalRadius;
     float alertDistance;
-    float fieldOfVision;   
-    
+    float fieldOfVision;
+
     bool hasMoveTarget;
     Vector2D moveTarget;
     int nodeTarget;
@@ -79,32 +100,38 @@ class AI
     Vector2D ultimateMoveTarget;
     vector<int> nodePriorities;
     bool movingToNode;
-    
+
     float angleToTarget;
     float angleDiff;
     float distToTarget;
-    
+
     int task;
-    
+
     bool doSound;
 };
 
 class KamikazeAI : public AI
 {
-  public:
-    KamikazeAI() : AI() { idleActionTimer = 0; }
-    KamikazeAI(int obj, int tgt, int st, float sigr, float ad, float fov) : AI(obj, tgt, st, sigr, ad, fov) { idleActionTimer = alertTimer = alertRotateSpeed = 0; }
-  
+public:
+    KamikazeAI() : AI()
+    {
+        idleActionTimer = 0;
+    }
+    KamikazeAI( int obj, int tgt, int st, float sigr, float ad, float fov ) : AI( obj, tgt, st, sigr, ad, fov )
+    {
+        idleActionTimer = alertTimer = alertRotateSpeed = 0;
+    }
+
     void move();
     void update();
-    
+
     void idleAnimations();
     void alertCheck();
     void lineOfSightBehavior();
     void attack();
     void nodeFollowBehavior();
     void targetDetect();
-    
+
     float idleActionTimer;
     float alertRotateSpeed;
     float alertTimer;
@@ -112,13 +139,23 @@ class KamikazeAI : public AI
 
 class TurretAI : public AI
 {
-  public:
-    TurretAI() : AI() { idleRotateDirection = 0; idleRotateLength = 1.75; setIdleRotation(); }
-    TurretAI(int obj, int tgt, int st, float sigr, float ad, float fov) : AI(obj, tgt, st, sigr, ad, fov) { idleRotateDirection = 0; idleRotateLength = 1.75; setIdleRotation(); }
-  
+public:
+    TurretAI() : AI()
+    {
+        idleRotateDirection = 0;
+        idleRotateLength = 1.75;
+        setIdleRotation();
+    }
+    TurretAI( int obj, int tgt, int st, float sigr, float ad, float fov ) : AI( obj, tgt, st, sigr, ad, fov )
+    {
+        idleRotateDirection = 0;
+        idleRotateLength = 1.75;
+        setIdleRotation();
+    }
+
     void update();
     void setIdleRotation();
-  private:
+private:
     float idleRotateDirection;
     float idleRotateTimer;
     float idleRotateLength;
@@ -127,28 +164,44 @@ class TurretAI : public AI
 
 class SlaveTurretAI : public AI
 {
-  public:
+public:
     SlaveTurretAI() : AI() {}
-    SlaveTurretAI(int obj, int tgt, int st, float sigr, float ad, float fov) : AI(obj, tgt, st, sigr, ad, fov) {}
-    
+    SlaveTurretAI( int obj, int tgt, int st, float sigr, float ad, float fov ) : AI( obj, tgt, st, sigr, ad, fov ) {}
+
     void update();
 };
 
 class HunterAI : public KamikazeAI
 {
-  public:
-    HunterAI() : KamikazeAI() { shootTimer = shotBurstLength = angleInaccuracy = inaccuracyTimer = pauseLength = pauseTimer = 0; }
-    HunterAI(int obj, int tgt, int st, float sigr, float ad, float fov, float plm, float plr, float pdm, float pdr, float slm, float slr, float sdm, float sdr, float cdist, float aim, float ac) : KamikazeAI(obj, tgt, st, sigr, ad, fov)
-    { shootTimer = shotBurstLength = angleInaccuracy = inaccuracyTimer = pauseLength = pauseTimer = 0; pauseLengthMin = plm;
-    pauseLengthRand = plr; pauseDelayMin = pdm; pauseDelayRand = pdr; shootLengthMin = slm; shootLengthRand = slr;
-    shootDelayMin = sdm; shootDelayRand = sdr; closestDistance = cdist; angleInaccuracyMax = aim; angleCompensation = ac; strafePreference = frand()*1.0-0.5; anger = 1; }
-    
+public:
+    HunterAI() : KamikazeAI()
+    {
+        shootTimer = shotBurstLength = angleInaccuracy = inaccuracyTimer = pauseLength = pauseTimer = 0;
+    }
+    HunterAI( int obj, int tgt, int st, float sigr, float ad, float fov, float plm, float plr, float pdm, float pdr, float slm, float slr, float sdm, float sdr, float cdist, float aim, float ac ) : KamikazeAI( obj, tgt, st, sigr, ad, fov )
+    {
+        shootTimer = shotBurstLength = angleInaccuracy = inaccuracyTimer = pauseLength = pauseTimer = 0;
+        pauseLengthMin = plm;
+        pauseLengthRand = plr;
+        pauseDelayMin = pdm;
+        pauseDelayRand = pdr;
+        shootLengthMin = slm;
+        shootLengthRand = slr;
+        shootDelayMin = sdm;
+        shootDelayRand = sdr;
+        closestDistance = cdist;
+        angleInaccuracyMax = aim;
+        angleCompensation = ac;
+        strafePreference = frand() * 1.0 - 0.5;
+        anger = 1;
+    }
+
     void update();
     void move();
     void lineOfSightBehavior();
     void targetDetect();
     void alertCheck();
-    
+
     // Properties
     float pauseLengthRand, pauseLengthMin;
     float pauseDelayRand, pauseDelayMin;
@@ -157,7 +210,7 @@ class HunterAI : public KamikazeAI
     float closestDistance;
     float angleInaccuracyMax;
     float strafePreference;
-    
+
     float shootTimer;
     float shotBurstLength;
     float angleInaccuracy;

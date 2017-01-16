@@ -7,7 +7,7 @@
  * http://www.gamecreation.org
  *
  * bitmapfont.cpp - header for bitmap font routines
- * 
+ *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
@@ -22,13 +22,13 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
- 
+
 #ifndef _BITMAPFONT_H_
 #define _BITMAPFONT_H_
 
 #include "sdb.h"
 
-#define	CENTERED	1e37f
-#define	LAST_Y		1e6f
+#define CENTERED    1e37f
+#define LAST_Y      1e6f
 
 #endif
