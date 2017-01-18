@@ -5,7 +5,19 @@ file( GLOB glob_SRC "include/*.h" "src/*.cpp" )
 include_directories( "include" )
 add_executable( shotgun-debugger ${glob_SRC} )
 
+# copy resource files alongside exeutable for ease of development
+add_custom_command(
+    TARGET shotgun-debugger POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+    ${CMAKE_SOURCE_DIR}/res ${CMAKE_BINARY_DIR} )
+
+# install resource files alongside executable by default unless told otherwise
+if( CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT )
+    set( CMAKE_INSTALL_PREFIX "${CMAKE_BINARY_DIR}" CACHE PATH "default install path" FORCE )
+endif()
+
 # point PKGDATADIR at the right place
+# TODO: remove once SDL2 port is complete and we're using SDL_GetBasePath()
 add_definitions( "-DPKGDATADIR=\"${CMAKE_INSTALL_PREFIX}/\"" )
 
 install( TARGETS shotgun-debugger DESTINATION . )
